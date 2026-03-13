@@ -95,6 +95,62 @@ class DigitalManager {
     }
     return false;
   }
+
+  /**
+   * Searches for recipes based on a criteria and query string.
+   * @param {string} criteria - The criteria to search by ('recipeid' or 'name').
+   * @param {string} query - The search query (case-insensitive substring match).
+   * @returns {Object[]} An array of matched recipe objects: { id, name, ingredients, steps }.
+   */
+  searchRecipes(criteria, query) {
+    const results = [];
+    const lowerQuery = query.toLowerCase();
+
+    for (const [id, recipe] of this.recipes.entries()) {
+      if (criteria === 'recipeid') {
+        if (id.toLowerCase().includes(lowerQuery)) {
+          results.push({ id, ...recipe });
+        }
+      } else if (criteria === 'name') {
+        if (recipe.name.toLowerCase().includes(lowerQuery)) {
+          results.push({ id, ...recipe });
+        }
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Sorts the recipes based on the provided criteria.
+   * @param {string} criteria - The criteria to sort by ('recipeid' or 'name').
+   * @returns {Object[]} An array of sorted recipe objects: { id, name, ingredients, steps }.
+   */
+  sortRecipes(criteria) {
+    const allRecipes = [];
+    for (const [id, recipe] of this.recipes.entries()) {
+      allRecipes.push({ id, ...recipe });
+    }
+
+    if (criteria === 'recipeid') {
+      allRecipes.sort((a, b) => {
+        // Extract numeric part of id assuming format is "recipe<number>"
+        const numA = parseInt(a.id.replace('recipe', ''), 10);
+        const numB = parseInt(b.id.replace('recipe', ''), 10);
+        
+        // Handle cases where parsing fails if id doesn't match standard format
+        if (isNaN(numA) && isNaN(numB)) return a.id.localeCompare(b.id);
+        if (isNaN(numA)) return 1;
+        if (isNaN(numB)) return -1;
+        
+        return numA - numB;
+      });
+    } else if (criteria === 'name') {
+      allRecipes.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+    }
+
+    return allRecipes;
+  }
 }
 
 module.exports = DigitalManager;

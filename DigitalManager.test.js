@@ -88,4 +88,56 @@ describe('DigitalManager', () => {
       expect(success).toBe(false);
     });
   });
+
+  describe('searchRecipes()', () => {
+    it('should search recipes by name using case-insensitive partial match', () => {
+      manager.addRecipe("Chocolate Cake", ["Flour", "Cocoa", "Sugar"], ["Mix", "Bake"]);
+      manager.addRecipe("Vanilla Cake", ["Flour", "Vanilla", "Sugar"], ["Mix", "Bake"]);
+      manager.addRecipe("Salad", ["Lettuce", "Tomato"], ["Chop", "Mix"]);
+
+      const results = manager.searchRecipes('name', 'cake');
+      expect(results).toHaveLength(2);
+      expect(results[0].name).toBe("Chocolate Cake");
+      expect(results[1].name).toBe("Vanilla Cake");
+
+      const noResults = manager.searchRecipes('name', 'pizza');
+      expect(noResults).toHaveLength(0);
+    });
+
+    it('should search recipes by recipeid', () => {
+      manager.addRecipe("Pasta", ["Pasta", "Water"], ["Boil"]);
+      manager.addRecipe("Pizza", ["Dough", "Cheese"], ["Bake"]);
+
+      const results = manager.searchRecipes('recipeid', 'recipe1');
+      expect(results).toHaveLength(1);
+      expect(results[0].name).toBe("Pasta");
+    });
+  });
+
+  describe('sortRecipes()', () => {
+    it('should sort recipes alphabetically by name', () => {
+      manager.addRecipe("Zebra Cake", ["Flour"], ["Bake"]);
+      manager.addRecipe("Apple Pie", ["Apples"], ["Bake"]);
+      manager.addRecipe("Banana Bread", ["Bananas"], ["Bake"]);
+
+      const sorted = manager.sortRecipes('name');
+      expect(sorted[0].name).toBe("Apple Pie");
+      expect(sorted[1].name).toBe("Banana Bread");
+      expect(sorted[2].name).toBe("Zebra Cake");
+    });
+
+    it('should sort recipes numerically by recipeid', () => {
+      // Simulate adding many recipes to test id sorting like recipe2 vs recipe10
+      for (let i = 0; i < 11; i++) {
+        manager.addRecipe(`Recipe ${i}`, [], []);
+      }
+
+      // Normally recipe10 would come before recipe2 in string sort
+      const sorted = manager.sortRecipes('recipeid');
+      
+      expect(sorted[1].id).toBe("recipe2");
+      expect(sorted[9].id).toBe("recipe10");
+      expect(sorted[10].id).toBe("recipe11");
+    });
+  });
 });
